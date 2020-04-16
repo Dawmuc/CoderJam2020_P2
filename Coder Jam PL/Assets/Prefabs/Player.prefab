@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7737488487157007254}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.28, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7737488487738634561}
@@ -164,10 +164,113 @@ MonoBehaviour:
     m_RotationOrder: 4
   DurationJump: 0.15
   JumpHigh: 20
+  throwSpeed: 2000
+  throwTime: 0.4
   groundMask:
     serializedVersion: 2
     m_Bits: 256
   GroundCheck: {fileID: 7737488487738634561}
+  isDying: 0
+  PlayerDeathParticle: {fileID: 3088045264448248319, guid: 753349ee907fcb74bafda881bd15d742,
+    type: 3}
+  durationBeforeDying: 0.5
+  durationAnimColorDeath: 0.15
+  AnimCurveDeath:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 5.732795
+      outSlope: 5.732795
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.02457909
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -5.826088
+      outSlope: -5.826088
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.03787911
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  AnimColorDeath: {r: 1, g: 0, b: 0, a: 1}
+  DurationBeforeRespawn: 1
+  DurationAnimRespawn: 1
+  AnimCurveRespawn:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 3.3105643
+      outSlope: 3.3105643
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.024946243
+    - serializedVersion: 3
+      time: 0.64839303
+      value: 1.1976374
+      inSlope: -0.02849417
+      outSlope: -0.02849417
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.84999806
+      value: 0.92618537
+      inSlope: -2.4601324
+      outSlope: -2.4601324
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.031948723
+      outWeight: 0.4589628
+    - serializedVersion: 3
+      time: 0.9389747
+      value: 0.99001133
+      inSlope: -4.4261374
+      outSlope: -4.4261374
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.083641574
+      outWeight: 0.43772438
+    - serializedVersion: 3
+      time: 0.96048903
+      value: 0.9265628
+      inSlope: -0.52408254
+      outSlope: -0.52408254
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1.858654
+      outSlope: 1.858654
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &7737488487738634562
 GameObject:
   m_ObjectHideFlags: 0

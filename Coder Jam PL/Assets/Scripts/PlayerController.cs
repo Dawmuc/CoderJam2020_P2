@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,7 +18,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float FallMaxSpeed = 50f;
 
     [Header("Movements")]
-    //[Tooltip("déplacement du joueur")]
     [SerializeField] private float AccelerationSpeed = 5f;
     [SerializeField] private float MaxSpeed = 10f;
     [SerializeField] private float DecelerationSpeed = 10f;
@@ -31,7 +31,15 @@ public class PlayerController : MonoBehaviour
     private Coroutine JumpCorout;
     private bool isJumping = false;
 
-    [Header("GroundCheck")]
+	[Header("Throw")]
+	[SerializeField] private float throwSpeed = 20.0f;
+	[SerializeField] private float throwTime = 1.0f;
+	private bool isBeingThrown;
+	private bool isChoosingThrowingDir;
+	private bool playerInPosition;
+	private Vector2 ThrowerPosition; 
+
+	[Header("GroundCheck")]
     [SerializeField] private LayerMask groundMask = default;
     [SerializeField] private Transform GroundCheck = null;
     private bool isGround = false;
@@ -52,9 +60,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AnimationCurve AnimCurveRespawn = null;
 
 
-
     private float moveHorizontal;
-    private bool AButtonDown;
+	private float moveVertical;
+	private bool AButtonDown;
 
 
     #region Unity Methode
@@ -69,37 +77,39 @@ public class PlayerController : MonoBehaviour
         liRespawnPos.Add(transform.position);
     }
 
-    void Update()
-    {
-        isGround = Physics2D.Linecast(transform.position, GroundCheck.position, groundMask);
+	void Update()
+	{
+		isGround = Physics2D.Linecast(transform.position, GroundCheck.position, groundMask);
 
-        if (!canMove)
-        {
-            rb2d.velocity = Vector2.zero;
-            currentSpeed = 0f;
-            return;
-        }
+		if (!canMove)
+		{
+			rb2d.velocity = Vector2.zero;
+			currentSpeed = 0f;
+			return;
+		}
 
-        UpdateControl();
-        UpdateGravity();
-        UpdateMove();
-        UpdateJump();
-        rb2d.velocity = velocity;
-    }
+		UpdateControl();
+		UpdateGravity();
+		UpdateMove();
+		UpdateJump();
+		UpdateThrowingInstruction();
+		rb2d.velocity = velocity;
+	}
     #endregion
 
     #region Control
     private void UpdateControl()
     {
         moveHorizontal = Input.GetAxis("Horizontal");
-        AButtonDown = Input.GetButtonDown("Fire1");
-    }
+		moveVertical = Input.GetAxis("Vertical");
+		AButtonDown = Input.GetButtonDown("Fire1");
+	}
     #endregion
 
     #region Gravity
     private void UpdateGravity()
     {
-        if (isJumping)
+        if (isJumping || isBeingThrown || isChoosingThrowingDir)
             return;
 
         if (isGround)
@@ -107,37 +117,41 @@ public class PlayerController : MonoBehaviour
             velocity.y = 0f;
             return;
         }
+
         velocity.y -= Gravity * Time.deltaTime;
+
         if (velocity.y < -FallMaxSpeed)
-        {
-            velocity.y = -FallMaxSpeed;
-        }
+			velocity.y = -FallMaxSpeed;
     }
     #endregion
 
     #region Movement
     private void UpdateMove()
     {
-        if(Mathf.Abs(moveHorizontal) > 0.1f)
-        {
+		if (isBeingThrown)
+			return;
+		else if (isChoosingThrowingDir)
+			rb2d.velocity = Vector2.zero;
+		else if (Mathf.Abs(moveHorizontal) > 0.1f)
+		{
 
-            if (currentSpeed > 0 && orientX * moveHorizontal < 0)
-                currentSpeed -= DecelerationSpeed * Time.deltaTime;
-            else
-            {
-                orientX = Mathf.Sign(moveHorizontal);
+			if (currentSpeed > 0 && orientX * moveHorizontal < 0)
+				currentSpeed -= DecelerationSpeed * Time.deltaTime;
+			else
+			{
+				orientX = Mathf.Sign(moveHorizontal);
 
-                currentSpeed += AccelerationSpeed * Time.deltaTime;
-                if (currentSpeed > MaxSpeed)
-                    currentSpeed = MaxSpeed;
-            }
-        }
-        else
-        {
-            currentSpeed -= DecelerationSpeed * Time.deltaTime;
-            if (currentSpeed <= 0f)
-                currentSpeed = 0f;
-        }
+				currentSpeed += AccelerationSpeed * Time.deltaTime;
+				if (currentSpeed > MaxSpeed)
+					currentSpeed = MaxSpeed;
+			}
+		}
+		else
+		{
+			currentSpeed -= DecelerationSpeed * Time.deltaTime;
+			if (currentSpeed <= 0f)
+				currentSpeed = 0f;
+		}
         velocity.x = currentSpeed * orientX;
     }
     #endregion
@@ -175,10 +189,55 @@ public class PlayerController : MonoBehaviour
         }
         isJumping = false;
     }
-    #endregion
+	#endregion
 
-    #region playerDeath
-    public void PlayerDeath()
+	#region Throwing
+	private void UpdateThrowingInstruction()
+	{
+		if (isChoosingThrowingDir)
+		{
+			velocity = Vector2.zero;
+			Vector2 dir = new Vector2(moveHorizontal, moveVertical).normalized;
+			StartCoroutine(GoToThrowerCenter());
+
+			if (AButtonDown && playerInPosition)
+				StartCoroutine(ThowPlayer(dir));
+		}
+	}
+
+	private IEnumerator GoToThrowerCenter()
+	{
+		playerInPosition = false;
+
+		while ((ThrowerPosition - (Vector2)transform.position).magnitude > 0.01)
+		{
+			transform.position = Vector2.Lerp(transform.position, ThrowerPosition, 0.01f);
+			yield return null;
+		}
+
+		playerInPosition = true;
+	}
+
+	private IEnumerator ThowPlayer(Vector2 dir)
+	{
+		isBeingThrown = true;
+
+		isChoosingThrowingDir = false;
+		float t = 0.0f;
+
+		while (t < throwTime && isBeingThrown)
+		{
+			velocity = dir * throwSpeed * Time.deltaTime;
+			t += Time.deltaTime;
+			yield return null;
+		}
+
+		isBeingThrown = false;
+	}
+	#endregion
+
+	#region playerDeath
+	public void PlayerDeath()
     {
         StartCoroutine(AnimDeath());
     }
@@ -228,7 +287,6 @@ public class PlayerController : MonoBehaviour
         while(Time.time < startTime + DurationAnimRespawn)
         {
             currentScale = 1f * AnimCurveRespawn.Evaluate((Time.time - startTime) / DurationAnimRespawn);
-            Debug.Log(currentScale);
 
             transform.localScale = new Vector3(currentScale, currentScale, currentScale);
             yield return null;
@@ -237,9 +295,22 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-
         canMove = true;
     }
-    #endregion
+	#endregion
 
+	#region Collision
+	private void OnTriggerEnter2D(Collider2D col)
+	{
+		if (col.gameObject.tag == "Thrower")
+		{
+			isChoosingThrowingDir = true;
+			ThrowerPosition = col.transform.position;
+		}
+	}
+	private void OnCollisionEnter2D(Collision2D collision)
+	{
+		isBeingThrown = false;
+	}
+	#endregion
 }

@@ -14,10 +14,6 @@ public class CameraManager : MonoBehaviour
     {
         Instance = this;
     }
-    void Start()
-    {
-        
-    }
 
     private void LateUpdate()
     {
