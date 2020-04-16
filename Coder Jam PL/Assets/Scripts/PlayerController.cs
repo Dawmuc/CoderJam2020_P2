@@ -94,6 +94,7 @@ public class PlayerController : MonoBehaviour
 		UpdateJump();
 		UpdateThrowingInstruction();
 		rb2d.velocity = velocity;
+		Debug.Log(velocity);
 	}
     #endregion
 
@@ -128,10 +129,8 @@ public class PlayerController : MonoBehaviour
     #region Movement
     private void UpdateMove()
     {
-		if (isBeingThrown)
+		if (isBeingThrown || isChoosingThrowingDir)
 			return;
-		else if (isChoosingThrowingDir)
-			rb2d.velocity = Vector2.zero;
 		else if (Mathf.Abs(moveHorizontal) > 0.1f)
 		{
 
@@ -143,7 +142,7 @@ public class PlayerController : MonoBehaviour
 
 				currentSpeed += AccelerationSpeed * Time.deltaTime;
 				if (currentSpeed > MaxSpeed)
-					currentSpeed = MaxSpeed;
+					currentSpeed = Mathf.Lerp(currentSpeed, MaxSpeed, 0.1f);
 			}
 		}
 		else
@@ -182,7 +181,7 @@ public class PlayerController : MonoBehaviour
         float startVelocityY = velocity.y;
         float startTime = Time.time;
 
-        while (Time.time < startTime + DurationJump)
+        while (Time.time < startTime + DurationJump && isJumping)
         {
             velocity.y = Mathf.Lerp(startVelocityY, startVelocityY + JumpHigh, AnimCurveJump.Evaluate((Time.time - startTime) / DurationJump));
             yield return null;
@@ -228,6 +227,8 @@ public class PlayerController : MonoBehaviour
 		while (t < throwTime && isBeingThrown)
 		{
 			velocity = dir * throwSpeed * Time.deltaTime;
+			currentSpeed = Mathf.Abs(velocity.x);
+			orientX = Mathf.Sign(velocity.x);
 			t += Time.deltaTime;
 			yield return null;
 		}
@@ -305,6 +306,7 @@ public class PlayerController : MonoBehaviour
 		if (col.gameObject.tag == "Thrower")
 		{
 			isChoosingThrowingDir = true;
+			isJumping = false;
 			ThrowerPosition = col.transform.position;
 		}
 	}

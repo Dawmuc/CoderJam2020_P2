@@ -15490,15 +15490,20 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: DecelerationSpeed
+      value: 70
+      objectReference: {fileID: 0}
     - target: {fileID: 7737488487157007253, guid: 7932feb90cfbfe248a011441b63dbeeb,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 77.75
+      value: 69.94
       objectReference: {fileID: 0}
     - target: {fileID: 7737488487157007253, guid: 7932feb90cfbfe248a011441b63dbeeb,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 13.49
+      value: 10.29
       objectReference: {fileID: 0}
     - target: {fileID: 7737488487157007253, guid: 7932feb90cfbfe248a011441b63dbeeb,
         type: 3}
