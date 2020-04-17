@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController Instance { get; private set; }
+	public static PlayerController Instance { get; private set; }
 
-    private Rigidbody2D rb2d;
-    private Vector2 velocity;
-    private SpriteRenderer spriteRend;
+	private Rigidbody2D rb2d;
+	private Vector2 velocity;
+	private SpriteRenderer spriteRend;
 
-    private bool canMove = true;
+	private bool canMove = true;
 
-    [Header("Gravity")]
+	private CameraManager cameraManager;
+
+	[Header("Gravity")]
     [SerializeField] private float Gravity = 20f;
     [SerializeField] private float FallMaxSpeed = 50f;
 
@@ -47,19 +52,23 @@ public class PlayerController : MonoBehaviour
     private bool isGround = false;
 
     [Header("PlayerDeath")]
-    [HideInInspector] public bool isDying = false;
     [SerializeField] private ParticleSystem PlayerDeathParticle = null;
-    public float durationBeforeDying = 0.5f;
     [SerializeField] private float durationAnimColorDeath = 0.1f;
     [SerializeField] private AnimationCurve AnimCurveDeath = null;
     [SerializeField] private Color AnimColorDeath = Color.red;
+    [HideInInspector] public bool isDying = false;
+    public float durationBeforeDying = 0.5f;
+	private int deathCount = 0;
 
     [Header("Respawn")]
-    private List<Vector3> liRespawnPos = new List<Vector3>();
     [SerializeField] private float DurationBeforeRespawn = 1f;
-    private int idRespawn = 0;
     [SerializeField] private float DurationAnimRespawn = 0.5f;
     [SerializeField] private AnimationCurve AnimCurveRespawn = null;
+    private List<Vector3> liRespawnPos = new List<Vector3>();
+
+	[Header("Canva")]
+	[SerializeField] private GameObject canva;
+	[SerializeField] private Text text;
 
     private float moveHorizontal;
 	private float moveVertical;
@@ -69,6 +78,8 @@ public class PlayerController : MonoBehaviour
 	private Vector3 playerNormalScale;
 	private Vector3 playerSmallScale;
 	private bool p2;
+
+	private bool endGame;
 
     #region Unity Methode
     private void Awake()
@@ -80,6 +91,7 @@ public class PlayerController : MonoBehaviour
         rb2d = GetComponent<Rigidbody2D>();
         spriteRend = GetComponent<SpriteRenderer>();
         liRespawnPos.Add(transform.position);
+		cameraManager = FindObjectOfType<CameraManager>();
 		playerNormalScale = transform.localScale;
 		playerSmallScale = playerNormalScale - new Vector3(0.2f, 0.2f, 0.2f);
 	}
@@ -117,7 +129,7 @@ public class PlayerController : MonoBehaviour
     #region Gravity
     private void UpdateGravity()
     {
-        if (isJumping || isBeingThrown || isChoosingThrowingDir)
+        if (isJumping || isBeingThrown || isChoosingThrowingDir || endGame)
             return;
 
         if (isGround)
@@ -138,6 +150,8 @@ public class PlayerController : MonoBehaviour
     {
 		if (isBeingThrown || isChoosingThrowingDir)
 			return;
+		else if (endGame)
+			velocity.x = MaxSpeed;
 		else if (Mathf.Abs(moveHorizontal) > 0.1f)
 		{
 
@@ -165,7 +179,7 @@ public class PlayerController : MonoBehaviour
     #region Jump
     private void UpdateJump()
     {
-        if(AButtonDown && isGround)
+        if(AButtonDown && isGround && !endGame)
         {
             JumpCorout = StartCoroutine(JumpCoroutine());
         }
@@ -244,7 +258,7 @@ public class PlayerController : MonoBehaviour
 	}
 	#endregion
 
-	#region ThrowerGraph
+	#region Thrower Graph
 	private void UpdateThrowerGraph()
 	{
 		if (ThrowerTransform == null)
@@ -259,13 +273,14 @@ public class PlayerController : MonoBehaviour
 	}
 	#endregion
 
-	#region playerDeath
+	#region player Death
 	public void PlayerDeath()
     {
-        StartCoroutine(AnimDeath());
-    }
+		StartCoroutine(AnimDeath());
+		deathCount++;
+	}
 
-    private IEnumerator AnimDeath()
+	private IEnumerator AnimDeath()
     {
         float startTimeDeath = Time.time;
         while (isDying)
@@ -289,9 +304,11 @@ public class PlayerController : MonoBehaviour
 
             yield return null;
         }
-    }
+		isBeingThrown = false;
+		isChoosingThrowingDir = false;
+	}
 
-    private IEnumerator RespawnPlayer()
+    private IEnumerator RespawnPlayer(int index = 100000)
     {
         ParticleSystem playerDeathParticle = Instantiate(PlayerDeathParticle, transform.position, Quaternion.identity) as ParticleSystem;
         canMove = false;
@@ -301,7 +318,7 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(DurationBeforeRespawn);
 
-        transform.position = liRespawnPos[idRespawn];
+		transform.position = index < liRespawnPos.Count ? liRespawnPos[index] : liRespawnPos.Last();
         spriteRend.enabled = true;
         GetComponent<CircleCollider2D>().enabled = true;
 
@@ -322,6 +339,7 @@ public class PlayerController : MonoBehaviour
     }
 	#endregion
 
+	#region Player Bounce
 	private IEnumerator PlayerBounce()
 	{
 		while ((transform.localScale - playerSmallScale).magnitude > 0.001 && !p2)
@@ -337,6 +355,7 @@ public class PlayerController : MonoBehaviour
 		}
 		p2 = false;
 	}
+	#endregion
 
 	#region Collision
 	private void OnTriggerEnter2D(Collider2D col)
@@ -347,7 +366,16 @@ public class PlayerController : MonoBehaviour
 			isJumping = false;
 			ThrowerTransform = col.transform;
 		}
+		else if (col.gameObject.tag == "Checkpoint")
+		{
+			liRespawnPos.Add(col.transform.position);
+		}
+		else if (col.gameObject.tag == "End" && isDying == false)
+		{
+			EndGame();
+		}
 	}
+
 	private void OnCollisionEnter2D(Collision2D col)
 	{
 		Debug.Log("hi");
@@ -355,5 +383,30 @@ public class PlayerController : MonoBehaviour
 		StopCoroutine(PlayerBounce());
 		StartCoroutine(PlayerBounce());
 	}
+	#endregion
+
+	#region Game End
+	private void EndGame()
+	{
+		endGame = true;
+		cameraManager.enabled = false;
+		canva.SetActive(true);
+		text.text = $"{deathCount} perished";
+		StartCoroutine(reloadSceneAfterDelay());
+	}
+
+	private IEnumerator reloadSceneAfterDelay()
+	{
+		float t = 0.0f;
+
+		while (t < 1.0f)
+		{
+			t += Time.deltaTime;
+			yield return null;
+		}
+
+		SceneManager.LoadScene(0);
+	}
+
 	#endregion
 }
