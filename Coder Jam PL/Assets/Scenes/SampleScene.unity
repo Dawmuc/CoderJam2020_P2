@@ -1070,7 +1070,7 @@ GameObject:
   - component: {fileID: 140617217}
   - component: {fileID: 140617219}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: Thrower
   m_TagString: Thrower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15494,6 +15494,41 @@ PrefabInstance:
         type: 3}
       propertyPath: DecelerationSpeed
       value: 70
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: smallThrowerScale.x
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: smallThrowerScale.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: smallThrowerScale.z
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: normalThrowerScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: normalThrowerScale.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007249, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: normalThrowerScale.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737488487157007250, guid: 7932feb90cfbfe248a011441b63dbeeb,
+        type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7737488487157007253, guid: 7932feb90cfbfe248a011441b63dbeeb,
         type: 3}

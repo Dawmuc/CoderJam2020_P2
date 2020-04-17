@@ -34,10 +34,12 @@ public class PlayerController : MonoBehaviour
 	[Header("Throw")]
 	[SerializeField] private float throwSpeed = 20.0f;
 	[SerializeField] private float throwTime = 1.0f;
+	[SerializeField] private Vector3 smallThrowerScale = new Vector3(1.5f, 1.5f, 1.5f);
+	[SerializeField] private Vector3 normalThrowerScale = new Vector3(3f, 3f, 3f);
 	private bool isBeingThrown;
 	private bool isChoosingThrowingDir;
 	private bool playerInPosition;
-	private Vector2 ThrowerPosition; 
+	private Transform ThrowerTransform; 
 
 	[Header("GroundCheck")]
     [SerializeField] private LayerMask groundMask = default;
@@ -59,11 +61,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float DurationAnimRespawn = 0.5f;
     [SerializeField] private AnimationCurve AnimCurveRespawn = null;
 
-
     private float moveHorizontal;
 	private float moveVertical;
 	private bool AButtonDown;
 
+	// player bounce effect
+	private Vector3 playerNormalScale;
+	private Vector3 playerSmallScale;
+	private bool p2;
 
     #region Unity Methode
     private void Awake()
@@ -75,7 +80,9 @@ public class PlayerController : MonoBehaviour
         rb2d = GetComponent<Rigidbody2D>();
         spriteRend = GetComponent<SpriteRenderer>();
         liRespawnPos.Add(transform.position);
-    }
+		playerNormalScale = transform.localScale;
+		playerSmallScale = playerNormalScale - new Vector3(0.2f, 0.2f, 0.2f);
+	}
 
 	void Update()
 	{
@@ -93,8 +100,8 @@ public class PlayerController : MonoBehaviour
 		UpdateMove();
 		UpdateJump();
 		UpdateThrowingInstruction();
+		UpdateThrowerGraph();
 		rb2d.velocity = velocity;
-		Debug.Log(velocity);
 	}
     #endregion
 
@@ -208,9 +215,9 @@ public class PlayerController : MonoBehaviour
 	{
 		playerInPosition = false;
 
-		while ((ThrowerPosition - (Vector2)transform.position).magnitude > 0.01)
+		while (((Vector2)ThrowerTransform.position - (Vector2)transform.position).magnitude > 0.01)
 		{
-			transform.position = Vector2.Lerp(transform.position, ThrowerPosition, 0.01f);
+			transform.position = Vector2.Lerp(transform.position, ThrowerTransform.position, 0.01f);
 			yield return null;
 		}
 
@@ -234,6 +241,21 @@ public class PlayerController : MonoBehaviour
 		}
 
 		isBeingThrown = false;
+	}
+	#endregion
+
+	#region ThrowerGraph
+	private void UpdateThrowerGraph()
+	{
+		if (ThrowerTransform == null)
+			return;
+
+		if (isChoosingThrowingDir)
+			ThrowerTransform.localScale = Vector3.Lerp(ThrowerTransform.localScale, smallThrowerScale, 0.05f);
+		else if ((normalThrowerScale - ThrowerTransform.localScale).magnitude > 0.001)
+			ThrowerTransform.localScale = Vector3.Lerp(ThrowerTransform.localScale, normalThrowerScale, 0.1f);
+		else
+			ThrowerTransform = null;
 	}
 	#endregion
 
@@ -300,19 +322,38 @@ public class PlayerController : MonoBehaviour
     }
 	#endregion
 
+	private IEnumerator PlayerBounce()
+	{
+		while ((transform.localScale - playerSmallScale).magnitude > 0.001 && !p2)
+		{
+			transform.localScale = Vector3.Lerp(transform.localScale, playerSmallScale, 0.3f);
+			yield return null;
+		}
+		p2 = true;
+		while ((playerNormalScale - transform.localScale).magnitude > 0.001 && p2)
+		{
+			transform.localScale = Vector3.Lerp(transform.localScale, playerNormalScale, 0.3f);
+			yield return null;
+		}
+		p2 = false;
+	}
+
 	#region Collision
 	private void OnTriggerEnter2D(Collider2D col)
 	{
-		if (col.gameObject.tag == "Thrower")
+		if (col.gameObject.tag == "Thrower" && ThrowerTransform != col.transform)
 		{
 			isChoosingThrowingDir = true;
 			isJumping = false;
-			ThrowerPosition = col.transform.position;
+			ThrowerTransform = col.transform;
 		}
 	}
-	private void OnCollisionEnter2D(Collision2D collision)
+	private void OnCollisionEnter2D(Collision2D col)
 	{
+		Debug.Log("hi");
 		isBeingThrown = false;
+		StopCoroutine(PlayerBounce());
+		StartCoroutine(PlayerBounce());
 	}
 	#endregion
 }
