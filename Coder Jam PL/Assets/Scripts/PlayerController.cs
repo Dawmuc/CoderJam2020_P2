@@ -253,7 +253,7 @@ public class PlayerController : MonoBehaviour
 		if (isChoosingThrowingDir)
 			ThrowerTransform.localScale = Vector3.Lerp(ThrowerTransform.localScale, smallThrowerScale, 0.05f);
 		else if ((normalThrowerScale - ThrowerTransform.localScale).magnitude > 0.001)
-			ThrowerTransform.localScale = Vector3.Lerp(ThrowerTransform.localScale, normalThrowerScale, 0.1f);
+			ThrowerTransform.localScale = Vector3.Lerp(ThrowerTransform.localScale, normalThrowerScale, 0.3f);
 		else
 			ThrowerTransform = null;
 	}
@@ -326,13 +326,13 @@ public class PlayerController : MonoBehaviour
 	{
 		while ((transform.localScale - playerSmallScale).magnitude > 0.001 && !p2)
 		{
-			transform.localScale = Vector3.Lerp(transform.localScale, playerSmallScale, 0.3f);
+			transform.localScale = Vector3.Lerp(transform.localScale, playerSmallScale, 0.6f);
 			yield return null;
 		}
 		p2 = true;
 		while ((playerNormalScale - transform.localScale).magnitude > 0.001 && p2)
 		{
-			transform.localScale = Vector3.Lerp(transform.localScale, playerNormalScale, 0.3f);
+			transform.localScale = Vector3.Lerp(transform.localScale, playerNormalScale, 0.6f);
 			yield return null;
 		}
 		p2 = false;

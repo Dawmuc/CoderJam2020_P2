@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7737488487157007253}
-  - component: {fileID: 7737488487157007250}
+  - component: {fileID: 2358934607568333575}
   - component: {fileID: 7737488487157007251}
   - component: {fileID: 967140276812994954}
   - component: {fileID: 7737488487157007249}
@@ -35,7 +35,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &7737488487157007250
+--- !u!212 &2358934607568333575
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -166,8 +166,8 @@ MonoBehaviour:
   JumpHigh: 20
   throwSpeed: 2000
   throwTime: 0.4
-  smallThrowerScale: {x: 0, y: 0, z: 0}
-  normalThrowerScale: {x: 0, y: 0, z: 0}
+  smallThrowerScale: {x: 1.5, y: 1.5, z: 1.5}
+  normalThrowerScale: {x: 3, y: 3, z: 3}
   groundMask:
     serializedVersion: 2
     m_Bits: 256
