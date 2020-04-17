@@ -399,7 +399,7 @@ public class PlayerController : MonoBehaviour
 	{
 		float t = 0.0f;
 
-		while (t < 1.0f)
+		while (t < 3.0f)
 		{
 			t += Time.deltaTime;
 			yield return null;
